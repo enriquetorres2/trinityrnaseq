@@ -143,6 +143,8 @@ int main(int argc,char** argv)
     map<int,int> component_number_mapping;
 
     cerr << "Assigning kmers to Iworm bundles ... ";
+
+    //Original Pragma
     #pragma omp parallel for schedule(guided,100)
     for (size_t i=0; i< dna.size(); i++) {
         const DNAVector & d = dna[i];
@@ -207,9 +209,9 @@ int main(int argc,char** argv)
         }
         
         componentReadMap.clear();
-    
+        //Orignal Pragma
         #pragma omp parallel for schedule(guided,100)
-        for (int i=0; i < (int)readSeqVector.size(); i++) {
+            for (int i=0; i < (int)readSeqVector.size(); i++) {
             
             string d = readSeqVector[i];
             // ensure upper case
@@ -314,7 +316,7 @@ int main(int argc,char** argv)
 
 
         // write out to files in map order
-         
+        //Original pragma
         #pragma omp parallel for schedule(static,1)
         for(unsigned int i = 0; i < mapComponents.size(); i++){
             
@@ -394,4 +396,5 @@ int main(int argc,char** argv)
 
     return 0;
 }
+
 
