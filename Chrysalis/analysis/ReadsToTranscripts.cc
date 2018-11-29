@@ -194,7 +194,7 @@ int main(int argc,char** argv)
     int mpiCount = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
-	
+    //omp_set_num_threads(omp_get_num_threads()/mpiSize);
     do {
     	
         vector<string> readSeqVector;
@@ -295,6 +295,7 @@ int main(int argc,char** argv)
         //if (reads_read > 0) {
             //total_reads_read += reads_read;
 	    MPI_Reduce(&reads_read,&total_reads_read,1, MPI_INT, MPI_SUM,0,MPI_COMM_WORLD);
+	    //omp_set_num_threads(omp_get_num_threads()*mpiSize);
             cerr << "[" << total_reads_read << "] reads analyzed for mapping." << endl;
         //}
 	//MPI_Finalize();
