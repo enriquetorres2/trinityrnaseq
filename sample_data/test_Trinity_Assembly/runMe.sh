@@ -14,7 +14,7 @@ ${TRINITY_HOME}/Trinity --seqType fq --max_memory 64G \
               --left reads.left.fq.gz \
               --right reads.right.fq.gz \
               --SS_lib_type RF \
-              --CPU 48
+              --CPU 12
 
 ##### Done Running Trinity #####
 

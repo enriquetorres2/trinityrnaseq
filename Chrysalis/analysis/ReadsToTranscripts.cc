@@ -7,7 +7,7 @@
 #define omp_get_num_threads() (1)
 #define omp_get_thread_num()  (0)
 #endif
-
+#include <mpi.h>
 #include "base/CommandLineParser.h"
 #include "analysis/DNAVector.h"
 #include "analysis/NonRedKmerTable.h"
@@ -16,7 +16,7 @@
 #include <queue>
 #include <map>
 #include <algorithm>
-
+//#include <mpi.h>
 
 #define MAX_OPEN_FILES 1000
 
@@ -29,6 +29,7 @@ extern "C"
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+//#include <mpi.h>
 }
 
 class Assignment
@@ -184,21 +185,31 @@ int main(int argc,char** argv)
 
     //string readsToTranscriptsOutputFile = bString + "/readsToComponents.out"; // really mapping reads to components rather than transcripts, using spectral alignment
     int outFile = open(readsToTranscriptsOutputFile.c_str(), O_WRONLY | O_CREAT | O_TRUNC , 0666);
-        
     cerr << "Processing reads:" << endl;
     unsigned long total_reads_read = 0;
     int reads_read = 0;
+    MPI_Init(NULL,NULL);
+    int rank;
+    int mpiSize;
+    int mpiCount = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+	
     do {
+    	
         vector<string> readSeqVector;
         vector<string> readNameVector;
         
         cerr << " reading another " << max_mem_reads << "... ";
-        for(int i=0;i<max_mem_reads;i++)
-        {
-            if(!fastaReader.NextToVector(readSeqVector, readNameVector)) break;
-        }
-
-        reads_read = readSeqVector.size();
+        while(mpiCount < mpiSize){
+	    for(int i=0;i<max_mem_reads;i++)
+            {
+            	if(!fastaReader.NextToVector(readSeqVector, readNameVector)) break;
+            }
+	    if(mpiCount == rank)break;
+	    mpiCount++;
+	}
+	reads_read = readSeqVector.size();
         if (reads_read > 0) {
             cerr << "done.  Read " << reads_read << " reads." << endl;
         } else {
@@ -281,13 +292,12 @@ int main(int argc,char** argv)
             }
            
         } // end of read assignment to components for this round of streaming
-        
-        
-        if (reads_read > 0) {
-            total_reads_read += reads_read;
+        //if (reads_read > 0) {
+            //total_reads_read += reads_read;
+	    MPI_Reduce(&reads_read,&total_reads_read,1, MPI_INT, MPI_SUM,0,MPI_COMM_WORLD);
             cerr << "[" << total_reads_read << "] reads analyzed for mapping." << endl;
-        }
-
+        //}
+	//MPI_Finalize();
         //-------------------------------------------------------
         // Write reads to files based on components mapped to.
 
@@ -317,7 +327,7 @@ int main(int argc,char** argv)
 
         // write out to files in map order
         //Original pragma
-        #pragma omp parallel for schedule(static,1)
+	#pragma omp parallel for schedule(static,1)
         for(unsigned int i = 0; i < mapComponents.size(); i++){
             
             // each thread accesses a unique component number, so no competition between threads in writing to component-based files.
@@ -368,7 +378,6 @@ int main(int argc,char** argv)
                 buf += readSeqVector[read_index];
                 buf += "\n";
             }
-            
             // write mapping to file, avoid thread collisions
             #pragma omp critical
             if(write(outFile,buf.c_str(),buf.size())<0)
@@ -378,14 +387,12 @@ int main(int argc,char** argv)
             }
             //close(outFile);
         }
-
         if(mapComponents.size()>0)
-          cerr << "[" << mapComponents.size() << "] components written." << endl;
-        
+        cerr << "[" << mapComponents.size() << "] components written." << endl;
         //cerr << "done\n";
         //clear out read component mappings
     } while (reads_read > 0);
-    
+    MPI_Finalize();
     close(outFile);
     
     cerr << "Done" << endl;
