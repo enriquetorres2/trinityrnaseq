@@ -3,9 +3,10 @@ find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH}
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH})
 
 project (Inchworm)
-
+find_package(MPI REQUIRED)
 enable_language(CXX)
-
+set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CSS_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
 set(default_build_type "Release")
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -13,7 +14,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "${default_build_type}")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pipe -W -Wall -Wpedantic -fopenmp -pthread -m64")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pipe -W -Wall -Wpedantic -fopenmp -pthread -m64 ")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2  -DNDEBUG ")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
@@ -29,7 +30,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
 
 include_directories( BEFORE "${CMAKE_SOURCE_DIR}" )
-
+include_directories(${MPI_INCLUDE_PATH})
 
 ############
 ## Chrysalis 
@@ -102,8 +103,8 @@ set(ReadsToTranscripts_SOURCES analysis/AACodons.cc
                                base/FileParser.cc
                                base/StringUtil.cc
                                util/mutil.cc )
-
 add_executable(ReadsToTranscripts ${ReadsToTranscripts_SOURCES})
+target_link_libraries(ReadsToTranscripts ${MPI_LIBRARIES})
 install(TARGETS ReadsToTranscripts DESTINATION bin)
 
 

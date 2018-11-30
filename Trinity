@@ -123,7 +123,7 @@ my $min_glue = 2;
 my $min_iso_ratio = 0.05;
 my $glue_factor = 0.05;
 my $max_reads_per_graph = 200000;
-my $max_reads_per_loop = 50000000; #MW: Set default to 50M, still fits into main memory
+my $max_reads_per_loop = 250000000; #MW: Set default to 50M, still fits into main memory
 my $min_pct_read_mapping = 0;
 my $chrysalis_output_dir = "chrysalis";
 my $NO_RUN_CHRYSALIS_FLAG = 0;
@@ -2054,7 +2054,7 @@ sub run_chrysalis {
     { 
         ## map reads to chrysalis components:
                         
-        my $cmd .= "$CHRYSALIS_DIR/bin/ReadsToTranscripts -i $chrysalis_reads_fa -f $iworm_bundles_fasta_file -o $reads_to_components_output_file -t $CPU -max_mem_reads $max_reads_per_loop ";
+        my $cmd .= "$mpiexec -n 4 $CHRYSALIS_DIR/bin/ReadsToTranscripts -i $chrysalis_reads_fa -f $iworm_bundles_fasta_file -o $reads_to_components_output_file -t $CPU -max_mem_reads $max_reads_per_loop ";
         if ($SS_lib_type) {
             $cmd .= " -strand ";
         }

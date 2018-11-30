@@ -10,11 +10,11 @@ if [ -z ${TRINITY_HOME} ]; then
 fi
 
 
-${TRINITY_HOME}/Trinity --seqType fq --max_memory 2G \
+${TRINITY_HOME}/Trinity --seqType fq --max_memory 64G \
               --left reads.left.fq.gz \
               --right reads.right.fq.gz \
               --SS_lib_type RF \
-              --CPU 4 
+              --CPU 48
 
 ##### Done Running Trinity #####
 

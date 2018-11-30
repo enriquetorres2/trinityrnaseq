@@ -13,7 +13,7 @@ ifeq ($(TRINITY_COMPILER),intel)
  INCHWORM_CONFIGURE_FLAGS = CXX=icpc CXXFLAGS="-fast"
  CHRYSALIS_MAKE_FLAGS = COMPILER=icpc
 else
- override TRINITY_COMPILER=gnu
+ override TRINITY_COMPILER=mpicxx
 endif
 
 
